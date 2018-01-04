@@ -1,0 +1,69 @@
+	
+//for i in 0..addr.len(){send("0".to_string(), addr[i]);}
+	//let mut send:Vec<mpsc::Sender<String>> =Vec::new(); // unsafe{ mem::uninitialized()}; // работает!!!
+	//let mut rev: Vec<mpsc::Receiver<String>> = Vec::new(); // работает!!!
+
+	let addr_:Vec<SocketAddr>= addr.clone();
+
+let s: & 'static str = &server;
+
+	let (ser, receiver) = mpsc::channel();
+let sender = mpsc::Sender::clone(&ser);
+thread::spawn(move ||{
+	for i in 0..addr.len(){
+
+
+	let connect = addr[i];			
+
+	let sender1 = mpsc::Sender::clone(&sender);		//работает
+	let (send_to_list, rec) = mpsc::channel();
+				
+thread::spawn(move ||{ 	
+
+	let sender_to = mpsc::Sender::clone(&sender1);//склонировали (для того чтобы потом услышать и сказать)
+
+	sender_to.send("null".to_string()).unwrap();//просто базово сказали что-то
+
+	send_to_list.send("null".to_string()).unwrap();
+	
+	thread::spawn(move ||{
+	read_message_from_server(connect, send_to_list); });
+	
+	for r in rec{ println!(" GOT: {}",r); if r != "null".to_string() { sender_to.send(r); }}//услышали тут
+
+	});	
+	/*let s = mpsc::Sender::clone(&send_to_list);
+	send.push(send_to_list);	//он скажет столько раз, сколько игроков на нашем сервере
+	sender_to.send(53).unwrap();*/
+	println!("[{:?}] <- К бою готов!",connect);
+      }});
+		receiverd(receiver, addr_);		
+   }
+fn read_message_from_server(addr:SocketAddr, send: mpsc::Sender<String>){//тут мы принимаем данные и говорим их серверу
+	let mut stream = TcpStream::connect(addr).unwrap();//IP+PORT
+	let mut buf:[u8;1024] = [0;1024];
+	send.send("null".to_string()).unwrap();
+	loop{
+		stream.read(&mut buf);
+		send.send(String::from_utf8_lossy(&buf).to_string()).unwrap();
+	}	
+   }
+
+pub fn receiverd(r: mpsc::Receiver<String>, socket: Vec<SocketAddr>){	
+	for received in r{ 
+	let (send, receiv) = mpsc::channel();//receiv - с данными 
+		send.send(received).unwrap();
+		message(receiv, socket.clone());
+	}   }
+pub fn message(r: mpsc::Receiver<String>, socket: Vec<SocketAddr>){	
+	for i in 0..socket.len(){	
+			let (send1, receiv1) = mpsc::channel();//receiv1 - сокет
+			let (send2, receiv) = mpsc::channel(); 
+			let s = r.recv().unwrap();
+			send2.send(s);			
+			send1.send(socket[i]).unwrap();
+			thread::spawn(move ||{ 			
+			let socket = receiv1.recv().unwrap(); let message = receiv.recv().unwrap(); send(message, socket);
+		});		
+	}
+}}
