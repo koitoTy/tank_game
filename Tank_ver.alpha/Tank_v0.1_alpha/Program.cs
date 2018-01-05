@@ -1226,7 +1226,19 @@ namespace server_client
                             } } break;
                     case ConsoleKey.Spacebar: { if (endToWork)
                             {
-                                ShotState shot = new ShotState(MyTank.Position, MyTank.dir, MY_ID, 5);
+                                int x = 0, y = 0;
+                                switch (MyTank.dir)
+                                {
+                                    /*  меняется положение в зависимости от направления игрока  */
+                                    case 0: { x = MyTank.Position.X - 1; y = MyTank.Position.Y - 1;  } break;
+                                    case 180: { x = MyTank.Position.X + 4; y = MyTank.Position.Y - 1; } break;
+                                    case 90: { x = MyTank.Position.X + 1; y = MyTank.Position.Y + 1; } break;
+                                    case 270: { x = MyTank.Position.X + 1; y = MyTank.Position.Y - 1; } break;
+                                    default:
+                                        break;
+                                }
+                                Position p = new Position(x, y);
+                                ShotState shot = new ShotState(p, MyTank.dir, MY_ID, 5);                                
                                 MessageToServer("createshot:"+ShotState.To_string(shot));
                             } }break;
                     case ConsoleKey.Escape: { end = false; return; } break;
