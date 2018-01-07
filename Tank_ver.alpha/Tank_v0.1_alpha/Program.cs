@@ -648,9 +648,9 @@ namespace Tank_v0._1_alpha
                 switch (shot.dir)
                 {
                     case 0: { shot.Shot_position.X += 1; } break;
-                    case 90: { shot.Shot_position.Y += 1; } break;
+                    case 90: { shot.Shot_position.Y -= 1; } break;
                     case 180: { shot.Shot_position.X -= 1; } break;
-                    case 270: { shot.Shot_position.Y -= 1; } break;
+                    case 270: { shot.Shot_position.Y += 1; } break;
                 }
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.CursorLeft = shot.Shot_position.X; Console.CursorTop = shot.Shot_position.Y;
@@ -1172,7 +1172,7 @@ namespace server_client
         static void Work()
         {
             PlayerState MyTank = PlayerState.return_to_id(MY_ID, Players);
-            Task t = new Task(() => { while (end) Eventlistener(); }); t.Start();
+            Task t = new Task(() => {/* while (end)*/ Eventlistener(); }); t.Start();
             while (true)
             {                
                 switch (ToKey())
@@ -1230,15 +1230,21 @@ namespace server_client
                                 switch (MyTank.dir)
                                 {
                                     /*  меняется положение в зависимости от направления игрока  */
-                                    case 0: { x = MyTank.Position.X - 1; y = MyTank.Position.Y - 1;  } break;
-                                    case 180: { x = MyTank.Position.X + 4; y = MyTank.Position.Y - 1; } break;
-                                    case 90: { x = MyTank.Position.X + 1; y = MyTank.Position.Y + 1; } break;
-                                    case 270: { x = MyTank.Position.X + 1; y = MyTank.Position.Y - 1; } break;
+                                    case 0: { x = MyTank.Position.X + 1; y = MyTank.Position.Y + 1;  } break;
+                                    case 180: { x = MyTank.Position.X - 4; y = MyTank.Position.Y + 1; } break;
+                                    case 90: { x = MyTank.Position.X + 1; y = MyTank.Position.Y - 1; } break;
+                                    case 270: { x = MyTank.Position.X + 1; y = MyTank.Position.Y + 1; } break;
                                     default:
                                         break;
                                 }
-                                Position p = new Position(x, y);
-                                ShotState shot = new ShotState(p, MyTank.dir, MY_ID, 5);                                
+                                Position p;
+                                if (x > 0 && y > 0)
+                                {
+                                    p = new Position(x, y);                                    
+                                } else { p = MyTank.Position; }
+
+                                ShotState shot = new ShotState(p, MyTank.dir, MY_ID, 5);
+
                                 MessageToServer("createshot:"+ShotState.To_string(shot));
                             } }break;
                     case ConsoleKey.Escape: { end = false; return; } break;
