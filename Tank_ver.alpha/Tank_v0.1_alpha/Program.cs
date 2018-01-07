@@ -1368,8 +1368,17 @@ namespace server_client
                 ShotState.Position_plus_plus(Shot);
                 if (endToWork) { proofToWork = false; ShotState.WriteShot(Shot); proofToWork = true; }
             }
-            Console.ForegroundColor = ConsoleColor.Black;//забываем путь полёта пули(закрашиваем его)
-            if (endToWork) { proofToWork = false; ShotState.ForgetTheWay(Shot); proofToWork = true; }
+            while (true)
+            {
+                if (endToWork)
+                {
+                    proofToWork = false;
+                    Console.ForegroundColor = ConsoleColor.Black;//забываем путь полёта пули(закрашиваем его)
+                    ShotState.ForgetTheWay(Shot);
+                    proofToWork = true;
+                    break;
+                }
+            }
         }
 
         static void Main(string[] args)
