@@ -240,222 +240,7 @@ namespace Tank_v0._1_alpha
             Console.ForegroundColor = ConsoleColor.Black;//забываем путь полёта пули(закрашиваем его)
             ShotState.ForgetTheWay(Shot);
         }
-
-        private static void from_to_key(object ob)
-        {
-            
-            for_key = true;
-
-            cooldown--;
-
-            if (cooldown <= 0) { for_shot = true; cooldown = 10; }
-            
-        }
-
-        static bool for_key = false;
-        static bool for_shot = false;
-        static int cooldown = 10;
-
-        /* static void To_key()
-         {
-             //Приём нажатой клавиши           
-
-             PlayerState MyTank = Players[MY_ID];
-
-             System.Threading.Timer time = new System.Threading.Timer(new TimerCallback(from_to_key), null, 0, 10);
-
-             while (true)
-             {
-
-                 //Console.CursorTop = 90; Console.CursorLeft = 90;
-                 switch (Console.ReadKey().Key)
-                 {
-                     case ConsoleKey.Escape:
-                         { time.Dispose(); th = false; break; }
-                         break;
-
-                     //пробел
-                     case ConsoleKey.Spacebar:
-                         {
-                             if (for_shot)
-                             {
-                                 //"createshot"
-
-                                 var shot = PlayerState.CreateShot(Players[MY_ID], 3);
-
-                                 MessageToServer("createshot:" + PlayerState.ToString(MyTank) + ":3");// дамаг - 3
-                                 var thr = new Task(() => { MoveShot(shot); });
-
-                                 for_key = false;//откат кнопок
-                                 for_shot = false;//откат выстрела
-                             }
-                         }
-                         break;
-                     case ConsoleKey.LeftArrow:
-                         {
-                             if (for_key)
-                             {
-                                 PlayerState.NewPosition_X(MyTank, '-');
-                                 MessageToServer("movetank:" + PlayerState.ToString(MyTank)); for_key = false;
-                             }
-                         }
-                         break;
-                     case ConsoleKey.UpArrow:
-                         {
-                             if (for_key)
-                             {
-                                 PlayerState.NewPosition_Y(MyTank, '-');
-                                 MessageToServer("movetank:" + PlayerState.ToString(MyTank)); for_key = false;
-                             }
-                         }
-                         break;
-                     case ConsoleKey.RightArrow:
-                         {
-                             if (for_key)
-                             {
-                                 PlayerState.NewPosition_X(MyTank, '+');
-                                 MessageToServer("movetank:" + PlayerState.ToString(MyTank)); for_key = false;
-                             }
-                         }
-                         break;
-                     case ConsoleKey.DownArrow:
-                         {
-                             if (for_key)
-                             {
-                                 PlayerState.NewPosition_Y(MyTank, '+');
-                                 MessageToServer("movetank:" + PlayerState.ToString(MyTank)); for_key = false;
-                             }
-                         }
-                         break;
-
-
-                     case ConsoleKey.PrintScreen:
-                         { }
-                         break;
-
-
-                     case ConsoleKey.A:
-                         {
-                             if (for_key)
-                             {
-                                 PlayerState.NewPosition_X(MyTank, '-');
-                                 MessageToServer("movetank:" + PlayerState.ToString(MyTank)); for_key = false;
-                             }
-                         }
-                         break;
-
-                     case ConsoleKey.D:
-                         {
-                             if (for_key)
-                             {
-                                 PlayerState.NewPosition_X(MyTank, '+');
-                                 MessageToServer("movetank:" + PlayerState.ToString(MyTank)); for_key = false;
-                             }
-                         }
-                         break;
-
-
-                     // Аналог нажатия на пробел
-                     case ConsoleKey.E:
-                         {
-                             if (for_shot)
-                             {
-
-                                 for_key = false;
-                                 for_shot = false;
-                             }
-                         }
-                         break;
-
-                     // Аналог нажатия на пробел, но спец выстрел
-                     case ConsoleKey.Q:
-                         break;
-
-                     case ConsoleKey.S:
-                         {
-                             if (for_key)
-                             {
-                                 PlayerState.NewPosition_Y(MyTank, '+');
-                                 MessageToServer("movetank:" + PlayerState.ToString(MyTank)); for_key = false;
-                             }
-                         }
-                         break;
-
-                     case ConsoleKey.W:
-                         {
-                             if (for_key)
-                             {
-                                 PlayerState.NewPosition_Y(MyTank, '-');
-                                 MessageToServer("movetank:" + PlayerState.ToString(MyTank)); for_key = false;
-                             }
-                         }
-                         break;
-
-
-                     case ConsoleKey.NumPad2:
-                         {
-                             if (for_key)
-                             {
-                                 PlayerState.NewPosition_Y(MyTank, '+');
-                                 MessageToServer("movetank:" + PlayerState.ToString(MyTank)); for_key = false;                                
-                             }
-                         }
-                         break;
-
-                     case ConsoleKey.NumPad4:
-                         {
-                             if (for_key)
-                             {
-                                 PlayerState.NewPosition_X(MyTank, '-');
-                                 MessageToServer(PlayerState.ToString(MyTank));                               
-                             }
-                         }
-                         break;
-
-                     case ConsoleKey.NumPad6:
-                         {
-                             if (for_key)
-                             {
-                                 PlayerState.NewPosition_X(MyTank, '+');
-                                 MessageToServer("movetank:" + PlayerState.ToString(MyTank)); for_key = false;
-                             }
-                         }
-                         break;
-
-                     //нажатие на пробел
-                     case ConsoleKey.NumPad7:
-                         {
-                             if (for_shot)
-                             {
-
-                                 for_key = false;
-                                 for_shot = false;
-                             }
-                         }
-                         break;
-                     case ConsoleKey.NumPad8:
-                         {
-                             if (for_key)
-                             {
-                                 PlayerState.NewPosition_Y(MyTank, '-');
-                                 MessageToServer("movetank:" + PlayerState.ToString(MyTank)); for_key = false;
-                             }
-                         }
-                         break;
-
-                     // Аналог нажатия на пробел но спец выстрел
-                     case ConsoleKey.NumPad9:
-                         break;
-
-
-                     default:
-                         break;
-
-                 }
-             }
-         }*/
-
-
+        
         static IPEndPoint ipPoint = new IPEndPoint(remoteIPAddress, remotePort);
 
         static Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -1231,26 +1016,31 @@ namespace server_client
                             } } break;
                     case ConsoleKey.Spacebar: { if (endToWork)
                             {
-                                int x = 0, y = 0;
-                                switch (MyTank.dir)
+                                if (cooldown)
                                 {
-                                    /*  меняется положение в зависимости от направления игрока  */
-                                    case 0: { x = MyTank.Position.X + 1; y = MyTank.Position.Y + 1;  } break;
-                                    case 180: { x = MyTank.Position.X - 4; y = MyTank.Position.Y + 1; } break;
-                                    case 90: { x = MyTank.Position.X + 1; y = MyTank.Position.Y - 1; } break;
-                                    case 270: { x = MyTank.Position.X + 1; y = MyTank.Position.Y + 1; } break;
-                                    default:
-                                        break;
+                                    int x = 0, y = 0;
+                                    switch (MyTank.dir)
+                                    {
+                                        /*  меняется положение в зависимости от направления игрока  */
+                                        case 0: { x = MyTank.Position.X + 1; y = MyTank.Position.Y + 1; } break;
+                                        case 180: { x = MyTank.Position.X - 4; y = MyTank.Position.Y + 1; } break;
+                                        case 90: { x = MyTank.Position.X + 1; y = MyTank.Position.Y - 1; } break;
+                                        case 270: { x = MyTank.Position.X + 1; y = MyTank.Position.Y + 1; } break;
+                                        default:
+                                            break;
+                                    }
+                                    Position p;
+                                    if (x > 0 && y > 0)
+                                    {
+                                        p = new Position(x, y);
+                                    }
+                                    else { p = MyTank.Position; }
+
+                                    ShotState shot = new ShotState(p, MyTank.dir, MY_ID, 5);
+
+                                    MessageToServer("createshot:" + ShotState.To_string(shot));
+                                    cooldown = false;
                                 }
-                                Position p;
-                                if (x > 0 && y > 0)
-                                {
-                                    p = new Position(x, y);                                    
-                                } else { p = MyTank.Position; }
-
-                                ShotState shot = new ShotState(p, MyTank.dir, MY_ID, 5);
-
-                                MessageToServer("createshot:"+ShotState.To_string(shot));
                             } }break;
                     case ConsoleKey.Escape: { end = false; return; } break;
                     default: { } break;
@@ -1387,6 +1177,12 @@ namespace server_client
             }
         }
 
+        static bool cooldown = false;
+        static void EventTime(object sender)
+        {
+            cooldown = true;
+        }
+
         static void Main(string[] args)
         {
             Console.WriteLine("\n\n\n******** Введите IP сервера ********"); Console.Write("IP: ");
@@ -1396,8 +1192,9 @@ namespace server_client
             Console.WriteLine("Начинаю получение объектов игры........");
 
             Connect();
-            
 
+            System.Threading.Timer time = new System.Threading.Timer(EventTime,null,2000,5000); 
+            
             //Console.Clear();
             Work();
             
