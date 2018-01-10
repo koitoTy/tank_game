@@ -82,6 +82,17 @@ namespace Tank_v0._1_alpha
                 }
                 return false;
             }
+            public static bool FindWall(List<WallState> walls, WallState wall)
+            {
+                foreach (WallState item in walls)
+                {
+                    if (item.Wall_block == wall.Wall_block)
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
         }
 
         // Структура для удобного представления выстрела
@@ -686,7 +697,7 @@ namespace server_client
             }  
         }
 
-        public static void Connect()
+        static void Connect()
         {
             send();
             Object_received();
@@ -734,11 +745,15 @@ namespace server_client
                                 MyTank.dir = 270;                                
 
                                 Position last = MyTank.Position;
-                                int x = last.X; int y = last.Y;
-                                MyTank.LastPosition = new Position(x, y);
-                                MyTank.Position.Y += 1;
-                                //PrintCoordinate(p.X, p.Y, MyTank.dir, MY_ID);
-                                MessageToServer("movetank:"+PlayerState.ToString(MyTank));
+                                int x = last.X; int y = last.Y;                                
+                                WallState wall = new WallState(new Position(x, y + 1), 5);
+                                if (!WallState.FindWall(Walls, wall))
+                                {
+                                    MyTank.LastPosition = new Position(x, y);
+                                    MyTank.Position.Y += 1;
+                                    //PrintCoordinate(p.X, p.Y, MyTank.dir, MY_ID);
+                                    MessageToServer("movetank:" + PlayerState.ToString(MyTank));
+                                }
                             }
                     } break;
                     case ConsoleKey.UpArrow: {
@@ -747,10 +762,14 @@ namespace server_client
                                 
                                 Position last = MyTank.Position;
                                 int x = last.X; int y = last.Y;
-                                MyTank.LastPosition = new Position(x, y);
-                                MyTank.Position.Y -= 1;                                
-                                //PrintCoordinate(p.X, p.Y, MyTank.dir, MY_ID);
-                                MessageToServer("movetank:" + PlayerState.ToString(MyTank));
+                                WallState wall = new WallState(new Position(x, y - 1), 5);
+                                if (!WallState.FindWall(Walls, wall))
+                                {
+                                    MyTank.LastPosition = new Position(x, y);
+                                    MyTank.Position.Y -= 1;
+                                    //PrintCoordinate(p.X, p.Y, MyTank.dir, MY_ID);
+                                    MessageToServer("movetank:" + PlayerState.ToString(MyTank));
+                                }
                             }
 
                     } break;
@@ -760,10 +779,14 @@ namespace server_client
                                 
                                 Position last = MyTank.Position;
                                 int x = last.X; int y = last.Y;
-                                MyTank.LastPosition = new Position(x, y);
-                                MyTank.Position.X -= 1;                                
-                                //PrintCoordinate(p.X, p.Y, MyTank.dir, MY_ID);
-                                MessageToServer("movetank:" + PlayerState.ToString(MyTank));
+                                WallState wall = new WallState(new Position(x - 1, y), 5);
+                                if (!WallState.FindWall(Walls, wall))
+                                {
+                                    MyTank.LastPosition = new Position(x, y);
+                                    MyTank.Position.X -= 1;
+                                    //PrintCoordinate(p.X, p.Y, MyTank.dir, MY_ID);
+                                    MessageToServer("movetank:" + PlayerState.ToString(MyTank));
+                                }
                             } } break;
                     case ConsoleKey.RightArrow: {
                             if (endToWork) { /* Код пишем тут  */
@@ -771,37 +794,61 @@ namespace server_client
                                 
                                 Position last = PlayerState.ReturnMyPosition(MyTank);
                                 int x = last.X; int y = last.Y;
-                                MyTank.LastPosition = new Position(x, y);
-                                MyTank.Position.X += 1;                                
-                                //PrintCoordinate(p.X, p.Y, MyTank.dir, MY_ID);
-                                MessageToServer("movetank:" + PlayerState.ToString(MyTank));
+                                WallState wall = new WallState(new Position(x + 1, y), 5);
+                                if (!WallState.FindWall(Walls, wall))
+                                {
+                                    MyTank.LastPosition = new Position(x, y);
+                                    MyTank.Position.X += 1;
+                                    //PrintCoordinate(p.X, p.Y, MyTank.dir, MY_ID);
+                                    MessageToServer("movetank:" + PlayerState.ToString(MyTank));
+                                }
                             } } break;
                     case ConsoleKey.Spacebar: { if (endToWork)
                             {
+                                bool create = false;
                                 if (cooldown)
                                 {
                                     int x = 0, y = 0;
                                     switch (MyTank.dir)
                                     {
                                         /*  меняется положение в зависимости от направления игрока  */
-                                        case 0: { x = MyTank.Position.X + 1; y = MyTank.Position.Y + 1; } break;
-                                        case 180: { x = MyTank.Position.X - 4; y = MyTank.Position.Y + 1; } break;
-                                        case 90: { x = MyTank.Position.X + 1; y = MyTank.Position.Y - 1; } break;
-                                        case 270: { x = MyTank.Position.X + 1; y = MyTank.Position.Y + 1; } break;
+                                        case 0: { x = MyTank.Position.X + 1; y = MyTank.Position.Y + 1;
+                                                WallState wall = new WallState(new Position(x, y), 5);
+                                                if (!WallState.FindWall(Walls, wall))
+                                                { create = true; }
+                                            } break;
+                                        case 180: { x = MyTank.Position.X - 4; y = MyTank.Position.Y + 1;
+                                                WallState wall = new WallState(new Position(x, y), 5);
+                                                if (!WallState.FindWall(Walls, wall))
+                                                { create = true; }
+                                            } break;
+                                        case 90: { x = MyTank.Position.X + 1; y = MyTank.Position.Y - 1;
+                                                WallState wall = new WallState(new Position(x, y), 5);
+                                                if (!WallState.FindWall(Walls, wall))
+                                                { create = true; }
+                                            } break;
+                                        case 270: { x = MyTank.Position.X + 1; y = MyTank.Position.Y + 1;
+                                                WallState wall = new WallState(new Position(x, y), 5);
+                                                if (!WallState.FindWall(Walls, wall))
+                                                { create = true; }
+                                            } break;
                                         default:
                                             break;
                                     }
-                                    Position p;
-                                    if (x > 0 && y > 0)
+                                    if (create)
                                     {
-                                        p = new Position(x, y);
+                                        Position p;
+                                        if (x > 0 && y > 0)
+                                        {
+                                            p = new Position(x, y);
+                                        }
+                                        else { p = MyTank.Position; }
+
+                                        ShotState shot = new ShotState(p, MyTank.dir, MY_ID, 5);
+
+                                        MessageToServer("createshot:" + ShotState.To_string(shot));
+                                        cooldown = false;
                                     }
-                                    else { p = MyTank.Position; }
-
-                                    ShotState shot = new ShotState(p, MyTank.dir, MY_ID, 5);
-
-                                    MessageToServer("createshot:" + ShotState.To_string(shot));
-                                    cooldown = false;
                                 }
                             } }break;
                     case ConsoleKey.Escape: { end = false; return; } break;
