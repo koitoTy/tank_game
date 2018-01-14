@@ -72,17 +72,18 @@ println!("Введите число секунд ожидания отправк
 }
 pub mod Text {
 
-pub fn trimming(arg1: String, arg2: char)->String{
+pub fn trim(arg1: String)->String{
 
 	let mut arg_return:String = String::new();
-
+	let arg2 = ' ';
 	for item in arg1.chars()
 	{ if item != arg2 {arg_return.push(item);} }
 	arg_return
 }
 
-pub fn trimming_vec(arg1:Vec<String>, arg2: char)->Vec<String>{
-	let mut arg_return:String = String::new();
+
+pub fn split_in_vec(arg1:Vec<String>, arg2: char)->Vec<String>{
+let mut arg_return:String = String::new();
 	let mut vec_return:Vec<String> = Vec::new();
 	for arg in arg1{
 	

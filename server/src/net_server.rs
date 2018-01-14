@@ -1,5 +1,5 @@
 pub mod net_server{
-
+use std::io;
 use std::io::prelude::*;
 use std::net::SocketAddr;
 use std::net::TcpListener;
@@ -13,148 +13,132 @@ use std::fs::File;
 use std::time::Duration;
 use std::mem;
 
-pub fn send(message:String, addr:SocketAddr){
-	let mut stream = TcpStream::connect(addr).unwrap();
-	stream.write(message.as_bytes()).unwrap();	
-   }
-pub fn send_udp(message:String, addr: Vec<SocketAddr>, addrs:& 'static str){
-	let mut socket = UdpSocket::bind(addrs).expect("");
-	for i in 0..addr.len(){
-	socket.send_to(message.as_bytes(), addr[i]).expect("");
-     }
-   }
-pub fn read_udp(addrs: &'static str)-> (String, SocketAddr){
-	let mut buf:[u8;1024] = [0;1024];	
-	let mut socket = UdpSocket::bind(addrs).expect("");
-	let (n, src_addr) = socket.recv_from(&mut buf).expect("");
-	drop(n);
-	let mut v:Vec<u8> = Vec::new();
-		for i in 0..buf.len(){ v.push(buf[i]);}
-	(String::from_utf8(v).unwrap(), src_addr)
-}
 
-pub fn read_tcp(mut stream: TcpStream)-> String{
+pub fn start_game(){
 	
-	let mut buf:[u8;1024] = [0; 1024]; println!("{:?}", stream);
-	stream.read(&mut buf);
-	let mut v:Vec<u8> = Vec::new();
-		for i in 0..buf.len(){ v.push(buf[i]);}
- 
-	String::from_utf8(v).unwrap()	
-}
-
-pub fn send_tcp(message:String, addrs:Vec<String>, addr: &'static str, intr_y: u64){		
-for i in addrs{	
-let str = message.clone();
-let (sender, recve) = mpsc::channel();
-let (send, rev) = mpsc::channel();
-send.send(i).unwrap(); sender.send(str).unwrap();
-thread::sleep(Duration::from_millis(intr_y));
-thread::spawn(move ||{ 
-let mut stream: String = rev.recv().unwrap();
-let mut message = recve.recv().unwrap();
-println!("Мы говорим клиентам: {}", message);//пока что будет, в финальной реализации этот println! уйдёт
-	let mut srm = TcpStream::connect(stream.as_str()).unwrap();
-	srm.write(message.as_bytes());
-});	
-	}	/*  ПРОВЕСТИ ТЕСТ ЭТОЙ ФУНКЦИИ ГДЕ ФОР СЧИТАЕТ ОТ 1 ДО 70   */
-}
-
-pub fn accept_socet_array<'a>(i: usize, addr:& 'a str)-> Vec<SocketAddr>{
-
-let listener = TcpListener::bind(addr).unwrap();
-
-let mut addr:Vec<SocketAddr> = Vec::new();//тут у нас все пришедшие к нам адреса
-loop{
-    
-        if addr.len() < i {
-
-		match listener.accept(){
-			Ok((_socket, addrs))=> addr.push(addrs),
-			Err(e) => {},
-			_=>{},
-		}
-			println!("\n->Игрок под номером {} подключён!<-", addr.len());
-	  } else { break; }
-     }	addr
    }
+pub fn start_game_handle(){
+	let mut i:usize = 0;
+	println!("Макс. кол-во игроков:");
+	let mut number_player = String::new();
 
-pub fn start_game<'a>(addr: Vec<SocketAddr>, server:& 'static str, ping: & 'a str, min_ping: u64, wait_download_to_ms: u64){	
-	println!("{:?}",addr);
-	let mut start = Socket_to_string(&addr);
-	let (sender, receiver) = mpsc::channel();
-	let addr_ = &addr.clone();	
-	for i in 0..addr.len(){ 	
-	println!("Игрок {} ожидает", addr[i]);
-	thread::sleep(Duration::from_millis(wait_download_to_ms));
-	send("0".to_string(),addr[i]);	
-	}	
+ 	//io::stdin().read_line(&mut number_player)
+      //	.unwrap();
 
-		let send = mpsc::Sender::clone(&sender);
+	
+	io::stdin().read_line(&mut number_player)
+      	.unwrap();
+
+	let number_player: u32 = number_player.trim().parse().unwrap();
+	
+	
+	/*
+			Приняли(1) ->отправили(2) ->наладили отправку через выделенный порт(3)
+	*/
 		
-thread::spawn(move ||{ 	
-	let listener = TcpListener::bind(server).unwrap();
-	println!("Забиндились и ждём..{:?}", listener);
-	let s = mpsc::Sender::clone(&send);	
+	let mut addrs:Vec<SocketAddr> = Vec::new();
 
-	loop{
+	println!("Введите IP:PORT сервера:");
+	let mut ip_port = String::new();	
 	
-	let sen = mpsc::Sender::clone(&s);
-
-	match listener.accept() {
-      Ok((stream, addr)) => {
-
-	println!("{:?}", stream);	
-
-	thread::spawn(move||{
-	let mut stream = stream;
-	println!("Начинаю приём");
-	loop{ 
-
-	let mut buf:[u8;256] = [0; 256]; 
-	//let qu:[u8; 256] = [0; 256];
-
-	//println!("{:?}", stream);
-
-	stream.read(&mut buf);
-
-	let q = b"movetank";
-	let q1 = b"createshot";
-
-      if buf.starts_with(q)||buf.starts_with(q1) {
-
-	let mut v:Vec<u8> = Vec::new();
-		for i in 0..buf.len(){ v.push(buf[i]);}
- 
-	let message:String = String::from_utf8(v).unwrap();	
-	println!("К нам пришло: {}", message);
-	 sen.send(message).unwrap(); 
-	}
-
+	io::stdin().read_line(&mut ip_port)
+      	.unwrap();
 	
-	}});},
-
-    	Err(e) => println!("couldn't get client: {:?}", e),
-	}
-	}
-	});
+	ip_port = slim(ip_port, ' ');
+	ip_port = slim(ip_port, '\n');
+	ip_port = slim(ip_port, '\r');
+	ip_port = slim(ip_port, '\0');
 	
-	for r in receiver{ 
-		let (sender_, receiver_) = mpsc::channel();
-		let (send_,rec_) = mpsc::channel(); send_.send(start.clone()).unwrap();
-		sender_.send(r).unwrap();
-		thread::spawn(move ||{
-		let s = receiver_.recv().unwrap();
-		let f = rec_.recv().unwrap();
-		send_tcp(s, f, server, min_ping);});
+	println!("{:?}",ip_port);
+	println!("Введите IP:PORT гейм-сервера(+{} будет добавлено):",number_player);
+	let mut game_port = String::new();	
+	
+	io::stdin().read_line(&mut game_port)
+      	.unwrap();
+	game_port = slim(game_port, ' ');
+	game_port = slim(game_port, '\n');
+	game_port = slim(game_port, '\r');
+	game_port = slim(game_port, '\0');
+	let _port = slim_vec(game_port.clone(), ':');// второй элемент - это наш порт
+	// а теперь будем прибавлять к порту 
+	let _port: u32 = _port[1].trim().parse().unwrap();
+	
+	
+	//let game_port: u32 = game_port.trim().parse().unwrap();
+	
+	let mut exit_id: Vec<u32> = Vec::new(); // вектор хранящий внутри id тех, кто должен покинуть игру
+	
+	println!("[Запускаю сервер!]");
+	let listener = TcpListener::bind(ip_port.as_str()).unwrap();	
+	println!("{:?}", listener);
+	let (sender, receiver) = mpsc::channel::<String>();
+	//let(sen_, recv_) = mpsc::channel();
+	
+	for i in 0..number_player {
+		//принимаем каждого последовательно
+	println!("Принимаю клиента номер:[{}]", i+1);
+	match listener.accept(){
+		Ok((mut stream, addr)) => { 				
+			addrs.push(addr);	
+			let sender_clone = mpsc::Sender::clone(&sender);
+			let id = addrs.len() - 1;
+			thread::spawn(move ||{
+				//let id = id;
+				/* тут мы передаём все данные */
+				thread::spawn(move || { 
+						/*а тут читаем данные*/
+					let mut buf:[u8; 256] = [0; 256];
+					let q:[u8; 8] = [0; 8]; 
+					/* 	read	 */
+					loop {
+						stream.read(&mut buf).is_ok(); // -> bool
+						if buf.starts_with(&q) == false { 
+							sender_clone.send(String::from_utf8(buf.to_vec()).unwrap()).unwrap(); 
+						}
+					}
+					/*receiver*/
+				}); 
+				loop{					
+					/*
+						receiver
+							sender
+					*/
+				
+				}	
+			});
+		},
+		Err(e) => {  },
+	}}	
+	for item in receiver {
+		/* если время ожидание истекло и сервер запущен - > говорим адреса*/	
+		// if start == true {
+			/*send_.send(item).unwrap();
+			thread::spawn(move ||{
+				for it in recv_{
+					
+				}
+			});*/
+		// }
 	}
-  }
-
-fn Socket_to_string(Addr: &Vec<SocketAddr>)->Vec<String>{
-	//Addr = Addr.to_vec();
-	let mut vec_return:Vec<String> = Vec::new();
-	for i in 0..Addr.len(){
-	vec_return.push(Addr[i].to_string());
-	} vec_return
    }
+pub fn slim(arg1: String, arg2: char)->String{
+
+	let mut arg_return:String = String::new();
+	
+	for item in arg1.chars()
+	{ if item != arg2 {arg_return.push(item);} }
+	arg_return
+}
+
+pub fn slim_vec(arg1: String, dementer: char) -> Vec<String>{
+	let mut arg_ = arg1;
+	arg_.push(dementer);
+	let mut ret:Vec<String> = Vec::new();
+	let mut st = String::new();
+	for item in arg_.chars(){
+		if item != dementer { st.push(item); }
+		else { ret.push(st); st = String::new(); }
+	}
+	ret		
+}
 }
