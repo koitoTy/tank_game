@@ -12,6 +12,7 @@ use std::sync::mpsc;
 use std::fs::File;
 use std::time::Duration;
 use std::mem;
+use std::rc::Rc;
 
 struct Connect{
 addr: TcpStream,
@@ -82,17 +83,17 @@ pub fn start_game_handle(){
 	println!("[Запускаю сервер!]");
 	let listener = TcpListener::bind(ip_port.as_str()).unwrap();	
 	println!("{:?}", listener);
-	let (sender, receiver) = mpsc::channel();
+	let (sender, receiver) = mpsc::channel();	
 	//let(sen_, recv_) = mpsc::channel();
 
-	let mut Connects:Vec<Connect> = Vec::new();
+	let mut Connects:Vec<TcpStream> = Vec::new();
 	let mut k = 0;
 	for i in 0..number_player {
 		//принимаем каждого последовательно
 	println!("Принимаю клиента номер:[{}]", i+1);
 	match listener.accept(){
 		Ok((mut stream, addr)) => { 
-			let sender_clone = mpsc::Sender::clone(&sender);
+			/*let sender_clone = mpsc::Sender::clone(&sender);
 			let (send_, recv_) = mpsc::channel();
 			thread::spawn(move|| { 
 				{send_.send(stream.try_clone().expect("Клиент упал..")).unwrap();}
@@ -101,23 +102,64 @@ pub fn start_game_handle(){
 				println!("Принимаем [{}]", k);
 				loop { 
 					stream.read(&mut buf);
-					if buf.starts_with(&q) == false { sender_clone.send(String::from_utf8(buf.to_vec()).unwrap()).unwrap(); }
+					if buf.starts_with(&q) == false { sender_clone.send((String::from_utf8(buf.to_vec()).unwrap(), k)).unwrap(); }
 				 }
 			 });
-			{
+			{*/
 			addrs.push(addr);	
-			let s = recv_.recv().unwrap();
-			let a = Connect::new(s, k);
-			Connects.push(a);		
-			k+=1;
-			}
+			//let s_s = recv_.recv().unwrap();			
+			Connects.push(stream);		
+			/*k+=1;
+			}*/
 		},
 		Err(e) => {  },
 	}}	
-		for item in receiver{
-			println!("Приняли сообщение [{}]", item);
+		/*for item in receiver{
+			for i_i in 0..Connects.len(){
+				Connects[i_i].write(&item.clone().0.into_bytes());
+				thread::spawn(move ||{ sen_.send(Connects).unwrap()});
+			}
+		} */
+
+		let mut Connects_copy:Vec<TcpStream> = Vec::new();
+		//let mut Connects_copy_:Vec<TcpStream> = Vec::new();
+		for i in 0..Connects.len(){
+			Connects_copy.push(Connects[i].try_clone().expect("Клиент упал"));
+			//Connects_copy_.push(Connects[i].try_clone().expect("Клиент упал"));
 		}
+
+		for mut item in Connects_copy{ 
+			let sender_clone = mpsc::Sender::clone(&sender);
+			thread::spawn(move ||{			
+			let q:[u8;8] = [0;8];
+			let mut buf:[u8; 256] = [0; 256]; 
+			loop { 
+					item.read(&mut buf);
+					if buf.starts_with(&q) == false { sender_clone.send(String::from_utf8(buf.to_vec()).unwrap()).unwrap(); }
+			}
+			});
+		}
+
+		for item_ in receiver{ 
+			let mut Connects_copy_:Vec<TcpStream> = Vec::new();
+			for i in 0..Connects.len(){				
+				Connects_copy_.push(Connects[i].try_clone().expect("Клиент упал"));
+			}
+
+			for mut item in Connects_copy_{ 
+				let (sender_, recv_) = mpsc::channel(); sender_.send(item_.clone()).unwrap();
+				thread::spawn(move ||{			
+					let s = recv_.recv().unwrap();
+					item.write(&s.into_bytes());
+				});
+		}  }
    }
+
+fn send_tcp(mut c:Vec<TcpStream>, m: String){
+  for _i in 0..c.len(){
+	c[_i].write(&m.clone().into_bytes());
+  } 
+}
 
 pub fn slim(arg1: String, arg2: char)->String{
 
