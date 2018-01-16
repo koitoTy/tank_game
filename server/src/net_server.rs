@@ -86,7 +86,7 @@ pub fn start_game_handle(){
 	let (sender, receiver) = mpsc::channel();	
 	//let(sen_, recv_) = mpsc::channel();
 
-	let mut Connects:Vec<TcpStream> = Vec::new();
+	let mut Connects:Vec<Connect> = Vec::new();
 	let mut k = 0;
 	for i in 0..number_player {
 		//принимаем каждого последовательно
@@ -108,38 +108,26 @@ pub fn start_game_handle(){
 			{*/
 			addrs.push(addr);	
 			//let s_s = recv_.recv().unwrap();			
-			Connects.push(stream);		
+			Connects.push(Connect::new(stream, i));		
 			/*k+=1;
 			}*/
 		},
 		Err(e) => {  },
 	}}	
-		/*for item in receiver{
-			for i_i in 0..Connects.len(){
-				Connects[i_i].write(&item.clone().0.into_bytes());
-				thread::spawn(move ||{ sen_.send(Connects).unwrap()});
-			}
-		} */
+		
 
 		let mut Connects_copy:Vec<TcpStream> = Vec::new();
 		//let mut Connects_copy_:Vec<TcpStream> = Vec::new();
 		{ let mut i:usize = Connects.len() - 1; loop {
 		
-		match Connects[i].try_clone() { 
+		match Connects[i].stream.try_clone() { 
 				Ok(mut srm) => { Connects_copy.push(srm); },
-				Err(e) => { Connects[i].shutdown(Shutdown::Both); Connects.remove(i); },				
+				Err(e) => { Connects[i].stream.shutdown(Shutdown::Both).is_ok(); Connects.remove(i); },				
 			}
 		
 		if i != 0{
 		i -= 1; } else { break; } 
 		}}
-		/*for i in 0..Connects.len(){
-			//Connects_copy.push(Connects[i].try_clone().expect("Клиент упал"));
-			match Connects[i].try_clone() { 
-				Ok(mut srm) => { Connects_copy.push(srm); },
-				Err(e) => { Connects.remove(i); },				
-			}
-		}*/ println!("{:?}", Connects);
 
 		for mut item in Connects_copy{ 
 			let sender_clone = mpsc::Sender::clone(&sender);
@@ -155,10 +143,16 @@ pub fn start_game_handle(){
 
 		for item_ in receiver{ println!("Отправляем сообщение");
 			let mut Connects_copy_:Vec<TcpStream> = Vec::new();
-			for i in 0..Connects.len(){				
-				Connects_copy_.push(Connects[i].try_clone().expect("Клиент упал"));//тут делать проверку и удалять адреса, а если их
-															 //совсем нету - паниковать нафиг!
+			{ let mut i:usize = Connects.len() - 1; loop {
+		
+	    	match Connects[i].stream.try_clone() { 
+				Ok(mut srm) => { Connects_copy_.push(srm); },
+				Err(e) => { Connects[i].stream.shutdown(Shutdown::Both).is_ok(); Connects.remove(i); },				
 			}
+		
+		    if i != 0{
+		        i -= 1; } else { break; } 
+		    }}
 
 			for mut item in Connects_copy_{ 
 				let (sender_, recv_) = mpsc::channel(); sender_.send(item_.clone()).unwrap();
