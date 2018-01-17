@@ -39,7 +39,7 @@ pub fn start_game_handle(){
 	io::stdin().read_line(&mut number_player)
       	.unwrap();
 
-	let number_player: u32 = number_player.trim().parse().unwrap();
+	let number_player: usize = number_player.trim().parse().unwrap();
 	
 	
 	println!("Количество итераций для проверки (рекомендую ставить от 15 до 100): ");
@@ -47,6 +47,13 @@ pub fn start_game_handle(){
 	io::stdin().read_line(&mut wait_operation).unwrap();
 
 	let wait_operation: u64 = wait_operation.trim().parse().unwrap();
+
+	println!("Время в милисекундах для пропинговки (рекомендуется от 2000 до 5000 +-2)");
+
+	let mut ping_time = String::new();
+	io::stdin().read_line(&mut ping_time).unwrap();
+	
+	let ping_time: u64 = ping_time.trim().parse().unwrap();
 
 	/*
 			Приняли(1) ->отправили(2)
@@ -124,7 +131,36 @@ pub fn start_game_handle(){
 			thread::spawn(move ||{			
 			let q:[u8;128] = [0;128];			
 			let mut buf:[u8; 256] = [0; 256]; 
+			let mut loop_q: u64 = 0;
 			loop { 
+					loop_q += 1;
+				if loop_q >= wait_operation { 
+					let (sen_, recv_) = mpsc::channel();
+					match item.write(b"you spawn") { 
+					Ok(srm) => {}, Err(r) => { break; }, };
+					let (_s, _r) = mpsc::channel(); match _s.send(item.try_clone()) { Ok(ok) => {}, Err(e) => {}, }
+					thread::spawn(move ||{
+					let item = _r.recv().unwrap();
+					let mut item = item.unwrap();
+					let mut byte:[u8; 256] = [0; 256];
+					let mut q_byte:[u8; 128] = [0; 128];
+					let mut _kl: u64 = 0;
+
+					let q_ = loop{ 
+							match item.read(&mut byte) { Ok(ok) => {}, Err(r) => { break 0; }, }
+							thread::sleep(Duration::from_millis(1));
+							_kl += 1;			
+							if _kl >= ping_time { break 0; }
+							
+							if byte.starts_with(&q_byte){ sen_.send(true); break 1; }
+						};
+
+					if q_ == 0 { sen_.send(false); } 
+					});
+					for received_ in recv_{
+						/* Удаляем из коллекции(отключаем) */						
+					}
+				}
 					item.read(&mut buf); println!("Принимаем сообщения [{:?}]", item);
 					if buf.starts_with(&q) == false { sender_clone.send(buf).unwrap(); }
 					item.peer_addr().unwrap();
