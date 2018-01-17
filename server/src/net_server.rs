@@ -136,29 +136,27 @@ pub fn start_game_handle(){
 					loop_q += 1;
 				if loop_q >= wait_operation { 
 					let (sen_, recv_) = mpsc::channel();
-					match item.write(b"you spawn") { 
-					Ok(srm) => {}, Err(r) => { break; }, };
-					let (_s, _r) = mpsc::channel(); match _s.send(item.try_clone()) { Ok(ok) => {}, Err(e) => {}, }
+					match item.write(b"") { Ok(ok) => {}, Err(e) => {/* Удаляем соединение из вектора */ break;}, };
 					thread::spawn(move ||{
-					let item = _r.recv().unwrap();
-					let mut item = item.unwrap();
-					let mut byte:[u8; 256] = [0; 256];
-					let mut q_byte:[u8; 128] = [0; 128];
 					let mut _kl: u64 = 0;
+					loop{ 						
+						thread::sleep(Duration::from_millis(1));
+						_kl += 1;		
+					sen_.send(false).unwrap();	
+						if _kl >= ping_time { break; }						
+					} sen_.send(true).unwrap(); });
 
-					let q_ = loop{ 
-							match item.read(&mut byte) { Ok(ok) => {}, Err(r) => { break 0; }, }
-							thread::sleep(Duration::from_millis(1));
-							_kl += 1;			
-							if _kl >= ping_time { break 0; }
-							
-							if byte.starts_with(&q_byte){ sen_.send(true); break 1; }
-						};
+					let mut buf_q:[u8; 256] = [0; 256]; 
+					let mut buf_q_else: [u8; 128] = [0; 128];
+	
+					let mut recv_val = false;
 
-					if q_ == 0 { sen_.send(false); } 
-					});
-					for received_ in recv_{
-						/* Удаляем из коллекции(отключаем) */						
+					loop {
+						item.read(&mut buf_q);
+						if buf_q.starts_with(&buf_q_else) { 
+							recv_val = recv_.recv().unwrap(); 
+							if recv_val == true { 
+								/* Удаляем соединение из вектора */ break; } }						
 					}
 				}
 					item.read(&mut buf); println!("Принимаем сообщения [{:?}]", item);
