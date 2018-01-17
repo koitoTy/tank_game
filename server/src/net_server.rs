@@ -156,7 +156,7 @@ pub fn start_game_handle(){
 						if buf_q.starts_with(&buf_q_else) { 
 							recv_val = recv_.recv().unwrap(); 
 							if recv_val == true { 
-								/* Удаляем соединение из вектора */ break; } }						
+								/* Удаляем соединение из вектора */ break; /*  через bool переменную сделать выход из loop */ } }						
 					}
 				}
 					item.read(&mut buf); println!("Принимаем сообщения [{:?}]", item);
