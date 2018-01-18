@@ -166,14 +166,26 @@ pub fn start_game_handle(){
 			});
 		}
 
-		for item_ in receiver{ println!("Отправляем сообщение");
-			let mut Connects_copy_:Vec<TcpStream> = Vec::new();
-			for i in 0..Connects.len(){				
+		let mut Connects_copy_:Vec<TcpStream> = Vec::new();
+		{	for i in 0..Connects.len(){				
 				Connects_copy_.push(Connects[i].try_clone().expect("Клиент упал"));//тут делать проверку и удалять адреса, а если их
 															 //совсем нету - паниковать нафиг!
-			}
-
-			for mut item in Connects_copy_{ 
+			} }
+	
+	
+		for item_ in receiver{ 
+			
+			println!("Отправляем сообщение");
+			let (_sender_, _receiver_) = mpsc::channel();
+			match _sender_.send(Connects_copy_) { Ok(ok)=> {}, Err(e) => {}, }
+        thread::spawn(move ||{
+        let mut Connects_copy_:Vec<TcpStream> = match _receiver_.recv(){ Ok(ok)=> {ok}, Err(e) => {
+		let _l:Vec<TcpStream> = Vec::new(); l  }, };
+		/* 
+		тут может быть ошибка (Err(e)), 		
+		пишу на паре и исправлю через пару 
+		*/
+			for mut item in Connects_copy_{ /* тут ошибка, пишу на паре и исправлю через пару */
 				let (sender_, recv_) = mpsc::channel(); sender_.send(item_.clone()).unwrap();
 				thread::spawn(move ||{			
 					let s = recv_.recv().unwrap();
@@ -181,7 +193,9 @@ pub fn start_game_handle(){
 					println!("{:?}", item.peer_addr());
 					item.peer_addr().unwrap();
 				});
-		}  }
+		}
+            
+        });  }
    }
 
 fn send_tcp(mut c:Vec<TcpStream>, m: String){
