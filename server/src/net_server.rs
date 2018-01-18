@@ -128,9 +128,9 @@ pub fn start_game_handle(){
 					loop_q += 1;
 				if loop_q >= wait_operation { 
 					let (sen_, recv_) = mpsc::channel();
-					match item.write(b"") { Ok(ok) => {}, Err(e) => {/* Удаляем соединение из вектора */ break;}, };
+					match item.write(b"you") { Ok(ok) => {}, Err(e) => {/* Удаляем соединение из вектора */ break;}, };
 					thread::spawn(move ||{
-					let mut _kl: u64 = 0;
+					let mut _kl: u64 = 0; /* реализовать удаление соединений из вектора */ 
 					loop{ 						
 						thread::sleep(Duration::from_millis(1));
 						_kl += 1;		
@@ -158,33 +158,33 @@ pub fn start_game_handle(){
 			});
 		}
 
-		let mut Connects_copy_:Vec<TcpStream> = Vec::new();
+		
+		for item_ in receiver{ 
+			let mut Connects_copy_:Vec<TcpStream> = Vec::new();
 		{	for i in 0..Connects.len(){				
 				Connects_copy_.push(Connects[i].stream.try_clone().expect("Клиент упал"));//тут делать проверку и удалять адреса, а если их
 															 //совсем нету - паниковать нафиг!
 			} }
-	
-	
-		for item_ in receiver{ 
-			
+
 		println!("Отправляем сообщение");
 		let (_sender_, _receiver_) = mpsc::channel();
-	match _sender_.send(Connects.clone()) { Ok(ok)=> {}, Err(e) => {}, } /* ошибка тут */
-        thread::spawn(move ||{
-        let mut Connects_copy_:Vec<Connect> = match _receiver_.recv(){ Ok(ok)=> {ok}, Err(e) => {
-		let _l:Vec<Connect> = Vec::new(); _l  }, };
+	match _sender_.send(Connects_copy_) { Ok(ok)=> {}, Err(e) => {}, } /* ошибка тут */
+        	thread::spawn(move ||{
+        		let mut Connects_copy_:Vec<TcpStream> = match _receiver_.recv(){ Ok(ok)=> {ok}, Err(e) => {
+			let _l:Vec<TcpStream> = Vec::new(); _l  }, };
 		/* 
 		тут может быть ошибка (Err(e)), 		
 		пишу на паре и исправлю через пару 
 		*/
 			for mut item in Connects_copy_{ /* тут ошибка, пишу на паре и исправлю через пару */
-				let (sender_, recv_) = mpsc::channel(); sender_.send(item_.clone()).unwrap();
+				let (sender_, recv_) = mpsc::channel(); 
+				sender_.send(item_.clone()).unwrap();
 				thread::spawn(move ||{			
 					let s = recv_.recv().unwrap();					
-					item.stream.write(&s);
-					println!("{:?}", item.stream.peer_addr());
+					item.write(&s);
+					println!("{:?}", item.peer_addr());
 				});
-		}
+			}
             
         });  }
 }
