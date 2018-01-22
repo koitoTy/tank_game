@@ -38,7 +38,7 @@ pub fn start_game(){
 
 pub fn start_game_handle(){
 
-    let bue_var = b"bue";
+    let bue_var:&'static [u8; 3] = b"bue";
 
 	let mut i:usize = 0;
 	println!("Макс. кол-во игроков:");
@@ -158,7 +158,9 @@ pub fn start_game_handle(){
 					item.read(&mut buf); println!("Принимаем сообщения [{:?}]", item);
 					if buf.starts_with(&q) == false { sender_clone.send(buf).unwrap(); }
 					item.peer_addr().unwrap();
-			} sender_clone.send(b"bue").unwrap();
+			} let received_bue = *bue_var;
+			  let received_bue:[u8; 3] = received_bue;
+			sender_clone.send(received_bue).unwrap();
 			});
 		}
 
