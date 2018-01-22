@@ -37,6 +37,9 @@ pub fn start_game(){
    }
 
 pub fn start_game_handle(){
+
+    let bue_var = b"bue";
+
 	let mut i:usize = 0;
 	println!("Макс. кол-во игроков:");
 	let mut number_player = String::new();
@@ -128,7 +131,7 @@ pub fn start_game_handle(){
 					loop_q += 1;
 				if loop_q >= wait_operation { 
 					let (sen_, recv_) = mpsc::channel();
-					match item.write(b"you") { Ok(ok) => {}, Err(e) => {/* Удаляем соединение из вектора */ break;}, };
+					match item.write(b"you") { Ok(ok) => {}, Err(e) => {/* Выходим из приёма */ break;}, };
 					thread::spawn(move ||{
 					let mut _kl: u64 = 0; /* реализовать удаление соединений из вектора */ 
 					loop{ 						
@@ -142,19 +145,20 @@ pub fn start_game_handle(){
 					let mut buf_q_else: [u8; 128] = [0; 128];
 	
 					let mut recv_val = false;
-
+                    let mut b_false_true = false;
 					loop {
 						item.read(&mut buf_q);
 						if buf_q.starts_with(&buf_q_else) { 
 							recv_val = recv_.recv().unwrap(); 
 							if recv_val == true { 
-								/* Удаляем соединение из вектора */ break; /*  через bool переменную сделать выход из loop */ } }						
+								b_false_true = true; break;  } }						
 					}
+					if b_false_true == true { break;}
 				}
 					item.read(&mut buf); println!("Принимаем сообщения [{:?}]", item);
 					if buf.starts_with(&q) == false { sender_clone.send(buf).unwrap(); }
 					item.peer_addr().unwrap();
-			}
+			} sender_clone.send(b"bue").unwrap();
 			});
 		}
 
