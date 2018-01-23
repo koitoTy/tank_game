@@ -160,12 +160,15 @@ pub fn start_game_handle(){
 					item.peer_addr().unwrap();
 			} let received_bue = *bue_var;
 			  let received_bue:[u8; 3] = received_bue;
-			sender_clone.send(received_bue).unwrap();
+			  let mut r_by:[u8; 256] = [0; 256]; 
+			  r_by[0] = received_bue[0]; r_by[1] = received_bue[1]; r_by[2] = received_bue[2];
+			sender_clone.send(r_by).unwrap();
 			});
 		}
 
 		
 		for item_ in receiver{ 
+			if item_.starts_with(bue_var){/* Тут удаляем адреса */}
 			let mut Connects_copy_:Vec<TcpStream> = Vec::new();
 		{	for i in 0..Connects.len(){				
 				Connects_copy_.push(Connects[i].stream.try_clone().expect("Клиент упал"));//тут делать проверку и удалять адреса, а если их
