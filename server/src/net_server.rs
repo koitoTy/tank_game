@@ -93,7 +93,7 @@ pub fn start_game_handle(){
 	//let(sen_, recv_) = mpsc::channel();
 
 	let mut Connects:Vec<Connect> = Vec::new();
-	let mut k = 0;
+	let mut k = 0;//id потока
 	for i in 0..number_player {
 		//принимаем каждого последовательно
 	println!("Принимаю клиента номер:[{}]", i+1);
@@ -123,6 +123,7 @@ pub fn start_game_handle(){
 
 		for mut item in Connects_copy{ 
 			let sender_clone = mpsc::Sender::clone(&sender);
+			//id потока тут юзается 
 			thread::spawn(move ||{			
 			let q:[u8;128] = [0;128];			
 			let mut buf:[u8; 256] = [0; 256]; 
@@ -131,9 +132,11 @@ pub fn start_game_handle(){
 					loop_q += 1;
 				if loop_q >= wait_operation { 
 					let (sen_, recv_) = mpsc::channel();
-					match item.write(b"you") { Ok(ok) => {}, Err(e) => {/* Выходим из приёма */ break;}, };
+					match item.write(b"you") { 
+					Ok(ok) => {}, Err(e) => {/* Выходим из приёма */ break;}
+					, };
 					thread::spawn(move ||{
-					let mut _kl: u64 = 0; /* реализовать удаление соединений из вектора */ 
+					let mut _kl: u64 = 0; 
 					loop{ 						
 						thread::sleep(Duration::from_millis(1));
 						_kl += 1;		
@@ -162,13 +165,18 @@ pub fn start_game_handle(){
 			  let received_bue:[u8; 3] = received_bue;
 			  let mut r_by:[u8; 256] = [0; 256]; 
 			  r_by[0] = received_bue[0]; r_by[1] = received_bue[1]; r_by[2] = received_bue[2];
+			  //реализовать передачу id в [4]-[5] элемента массива и сырой сервер готов
 			sender_clone.send(r_by).unwrap();
 			});
+			//увиличиваем id
+			k += 1;
 		}
 
 		
 		for item_ in receiver{ 
-			if item_.starts_with(bue_var){/* Тут удаляем адреса */}
+			if item_.starts_with(bue_var){/* Тут удаляем адреса */
+			    
+			}
 			let mut Connects_copy_:Vec<TcpStream> = Vec::new();
 		{	for i in 0..Connects.len(){				
 				Connects_copy_.push(Connects[i].stream.try_clone().expect("Клиент упал"));//тут делать проверку и удалять адреса, а если их
@@ -177,7 +185,7 @@ pub fn start_game_handle(){
 
 		println!("Отправляем сообщение");
 		let (_sender_, _receiver_) = mpsc::channel();
-	match _sender_.send(Connects_copy_) { Ok(ok)=> {}, Err(e) => {}, } /* ошибка тут */
+	match _sender_.send(Connects_copy_) { Ok(ok)=> {}, Err(e) => {}, } 
         	thread::spawn(move ||{
         		let mut Connects_copy_:Vec<TcpStream> = match _receiver_.recv(){ Ok(ok)=> {ok}, Err(e) => {
 			let _l:Vec<TcpStream> = Vec::new(); _l  }, };
