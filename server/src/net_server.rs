@@ -20,6 +20,15 @@ stream: TcpStream,
 id: usize,
 }
 
+impl Connect{
+	fn clone(&self) -> Connect{
+		let str = match self.stream.try_clone(){
+			Ok(mut str)=>{str}, Err(e)=>{ let t = TcpStream::connect("127.0.0.1:80").unwrap(); t}
+		};
+	   Connect{stream: str, id: self.id}
+  	}
+}
+
 /*impl Clone for Connect {
     fn clone(&self) -> Connect { *self }  < -- не работает
 }*/
@@ -69,7 +78,7 @@ pub fn start_game_handle(){
 			Приняли(1) ->отправили(2)
 	*/
 		
-	let mut addrs:Vec<SocketAddr> = Vec::new();
+	//let mut addrs:Vec<SocketAddr> = Vec::new();
 
 	println!("Введите IP:PORT сервера:");
 	let mut ip_port = String::new();	
@@ -85,6 +94,11 @@ pub fn start_game_handle(){
 	println!("{:?}",ip_port);
 		
 	//let mut exit_id: Vec<u32> = Vec::new(); // вектор хранящий внутри id тех, кто должен покинуть игру
+
+
+	/*
+		Реализовать чтение файлов		
+	*/
 	
 	println!("[Запускаю сервер!]");
 	let listener = TcpListener::bind(ip_port.as_str()).unwrap();	
@@ -100,7 +114,14 @@ pub fn start_game_handle(){
 	match listener.accept(){
 		Ok((mut stream, addr)) => { 
 			
-			addrs.push(addr);	
+			//addrs.push(addr);
+			thread::sleep(Duration::from_secs(1));
+			println!("Отправляю файлы на клиента");
+			{
+				
+				
+				
+			}	
 					
 			Connects.push(Connect::new(stream, i));	
 		},
@@ -217,6 +238,7 @@ pub fn start_game_handle(){
             } //else
     }
 }
+
 fn send_tcp(mut c:Vec<TcpStream>, m: String){
   for _i in 0..c.len(){
 	c[_i].write(&m.clone().into_bytes());
