@@ -93,7 +93,7 @@ pub fn start_game_handle(){
 	//let(sen_, recv_) = mpsc::channel();
 
 	let mut Connects:Vec<Connect> = Vec::new();
-	let mut k = 0;//id потока
+	
 	for i in 0..number_player {
 		//принимаем каждого последовательно
 	println!("Принимаю клиента номер:[{}]", i+1);
@@ -107,12 +107,12 @@ pub fn start_game_handle(){
 		Err(e) => {  },
 	}}			
 
-		let mut Connects_copy:Vec<TcpStream> = Vec::new();
+		let mut Connects_copy:Vec<Connect> = Vec::new();
 		
 		{ let mut i:usize = Connects.len() - 1; loop {
 		
 		match Connects[i].stream.try_clone() { 
-				Ok(mut srm) => { Connects_copy.push(srm); },
+				Ok(mut srm) => { Connects_copy.push(Connect{stream: srm,id: i}); },
 				Err(e) => { Connects[i].stream.shutdown(Shutdown::Both); Connects.remove(i); },				
 			}
 		
@@ -132,7 +132,7 @@ pub fn start_game_handle(){
 					loop_q += 1;
 				if loop_q >= wait_operation { 
 					let (sen_, recv_) = mpsc::channel();
-					match item.write(b"you") { 
+					match item.stream.write(b"you") { 
 					Ok(ok) => {}, Err(e) => {/* Выходим из приёма */ break;}
 					, };
 					thread::spawn(move ||{
@@ -150,7 +150,7 @@ pub fn start_game_handle(){
 					let mut recv_val = false;
                     let mut b_false_true = false;
 					loop {
-						item.read(&mut buf_q);
+						item.stream.read(&mut buf_q);
 						if buf_q.starts_with(&buf_q_else) { 
 							recv_val = recv_.recv().unwrap(); 
 							if recv_val == true { 
@@ -158,29 +158,46 @@ pub fn start_game_handle(){
 					}
 					if b_false_true == true { break;}
 				}
-					item.read(&mut buf); println!("Принимаем сообщения [{:?}]", item);
+					item.stream.read(&mut buf); println!("Принимаем сообщения [{:?}]", item.stream);
 					if buf.starts_with(&q) == false { sender_clone.send(buf).unwrap(); }
-					item.peer_addr().unwrap();
-			} let received_bue = *bue_var;
+					item.stream.peer_addr().unwrap();
+                
+			} 
+                
+              let received_bue = *bue_var;
 			  let received_bue:[u8; 3] = received_bue;
 			  let mut r_by:[u8; 256] = [0; 256]; 
 			  r_by[0] = received_bue[0]; r_by[1] = received_bue[1]; r_by[2] = received_bue[2];
-			  //реализовать передачу id в [4]-[5] элемента массива и сырой сервер готов
+              //r_by[5] = item.id;
+                let y = item.id;
+                let mut f: u8 = 0;
+                for u in 0..number_player{
+                    if y == u {                        
+                        break;
+                    }
+                    f += 1;
+                }
+                r_by[5] = f;
+			  
 			sender_clone.send(r_by).unwrap();
-			});
-			//увиличиваем id
-			k += 1;
+			});			
 		}
 
 		
 		for item_ in receiver{ 
-			if item_.starts_with(bue_var){/* Тут удаляем адреса */
-			    
-			}
+			if item_.starts_with(bue_var){/* Тут удаляем адрес */
+			    let j = item_[5] as usize;
+                {                    
+                    Connects[j].stream.shutdown(Shutdown::Both)
+                                        .expect("shutdown call failed");                    
+                    Connects.remove(j);
+                }
+			} else {
 			let mut Connects_copy_:Vec<TcpStream> = Vec::new();
 		{	for i in 0..Connects.len(){				
 				Connects_copy_.push(Connects[i].stream.try_clone().expect("Клиент упал"));//тут делать проверку и удалять адреса, а если их
-															 //совсем нету - паниковать нафиг!
+				
+                //совсем нету - НЕ паниковать нафиг!
 			} }
 
 		println!("Отправляем сообщение");
@@ -189,23 +206,17 @@ pub fn start_game_handle(){
         	thread::spawn(move ||{
         		let mut Connects_copy_:Vec<TcpStream> = match _receiver_.recv(){ Ok(ok)=> {ok}, Err(e) => {
 			let _l:Vec<TcpStream> = Vec::new(); _l  }, };
-		/* 
-		тут может быть ошибка (Err(e)), 		
-		пишу на паре и исправлю через пару 
-		*/
-			for mut item in Connects_copy_{ /* тут ошибка, пишу на паре и исправлю через пару */
-				let (sender_, recv_) = mpsc::channel(); 
-				sender_.send(item_.clone()).unwrap();
-				thread::spawn(move ||{			
-					let s = recv_.recv().unwrap();					
-					item.write(&s);
-					println!("{:?}", item.peer_addr());
-				});
+                
+			for mut item in Connects_copy_{ 									
+				item.write(&item_);
+				println!("{:?}", item.peer_addr());				
 			}
             
-        });  }
+        });  
+            
+            } //else
+    }
 }
-
 fn send_tcp(mut c:Vec<TcpStream>, m: String){
   for _i in 0..c.len(){
 	c[_i].write(&m.clone().into_bytes());
