@@ -48,6 +48,21 @@ pub fn start_game(){
 pub fn start_game_handle(){
 
     let bue_var:&'static [u8; 3] = b"bue";
+    
+    // let map = File::open(); // <- читаем координаты стен
+    
+        let mut file = File::open("map.txt").unwrap();
+        let mut map = String::new();
+        file.read_to_string(&mut map).unwrap();
+        
+        let mut file1 = File::open("tankplase.txt").unwrap();
+        let mut tank_plase = String::new();
+        file.read_to_string(&mut tank_plase).unwrap();
+
+	  //let mes = format!("{}M{}M{}");        //map, tank_plase, id
+    /*
+		Читаем файлы и группируем для отправки		
+	*/
 
 	let mut i:usize = 0;
 	println!("Макс. кол-во игроков:");
@@ -61,7 +76,7 @@ pub fn start_game_handle(){
 	let number_player: usize = number_player.trim().parse().unwrap();
 	
 	
-	println!("Количество итераций для проверки (рекомендую ставить от 15 до 100): ");
+	println!("Количество итераций для проверки (рекомендую ставить от 35 до 100): ");
 
 	io::stdin().read_line(&mut wait_operation).unwrap();
 
@@ -117,7 +132,8 @@ pub fn start_game_handle(){
 			//addrs.push(addr);
 			thread::sleep(Duration::from_secs(1));
 			println!("Отправляю файлы на клиента");
-			{
+			
+           	      {
 				
 				
 				
