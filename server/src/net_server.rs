@@ -197,7 +197,7 @@ pub fn start_game_handle(){
 				}
 					item.stream.read(&mut buf); println!("Принимаем сообщения [{:?}]", item.stream);
 					if buf.starts_with(&q) == false { sender_clone.send(buf).unwrap(); }
-					item.stream.peer_addr().unwrap();
+					//item.stream.peer_addr().unwrap(); // не к чему, но пусть пока будет
                 
 			} 
                 
