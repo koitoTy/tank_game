@@ -1,4 +1,4 @@
-mod utp{
+pub mod utp{
 use std::io;
 use std::io::prelude::*;
 use std::net::SocketAddr;
@@ -14,6 +14,8 @@ use std::rc::Rc;
 pub struct utp{
 	port: u16,
 	ip: String,
+	time: u64,
+	part: u8,
 }
 
 enum er{
@@ -37,7 +39,11 @@ pub struct data{
 }
 
 impl utp{
-	fn recv(&self, time: u64, part: u8)->data{
+	fn recv(&self)->data{
+	
+	    let time = self.time;
+	    let part = self.part;
+	    
 		let ip: &str = &*self.ip;
 		let port: &str = &*self.port.to_string();
 
@@ -103,7 +109,7 @@ impl utp{
 		 data{connect: true, data: buf, err_code: 0, err_text: "all ok".to_string()}		
     }
 	fn clear(&self)->utp{
-		utp{port: 0, ip: "".to_string()}
+		utp{port: 0, ip: "".to_string(), time: 1, part: 10}
 	}
 	
 /*
@@ -114,7 +120,7 @@ struct utp{
 */
 }
    pub fn new(port: u16, ip: String)->utp{
-		utp{ port: port, ip: ip }		
+		utp{ port: port, ip: ip, time: 1, part: 10 }		
 	}
    pub fn drop(a: utp){}
 }
