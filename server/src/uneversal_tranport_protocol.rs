@@ -80,9 +80,12 @@ impl utp{
     }
 
 
-	fn send(&self,data: [u8; 9], wait_time: u64, part: u8)->data{// данные, сколько ждём ответа, количество запросов
+	fn send(&self, data: [u8; 9])->data{// данные, сколько ждём ответа, количество запросов
 		let ip: &str = &*self.ip;
 		let port: &str = &*self.port.to_string();
+		let wait_time = self.time;
+	    let part = self.part;
+		
 		let mut buf: [u8; 9] = [0; 9];// mes_type, id_mes, id EvType x y z d , control byte (1010)
 			
 
