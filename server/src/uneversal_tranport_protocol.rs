@@ -11,7 +11,7 @@ use std::time::Duration;
 use std::mem;
 use std::rc::Rc;
 
-struct utp{
+pub struct utp{
 	port: u16,
 	ip: String,
 }
@@ -20,31 +20,19 @@ enum er{
 	r,// result
 }
 
-pub trait Utp{
-	fn new(port: u16, ip: String)->utp;
-	fn drop(a: utp);
-}
 
-struct data{
+
+pub struct data{
 	connect: bool,
 	data: [u8; 9],
 	err_code: u8, 
 	err_text: String,
 /* 
-
 0 - non error	
-
 1 - bad message
-
 2 - bad server
-
-
-
-
 404 - bad connect
 405 - bad connect or bad message
-
-
 */	
 }
 
@@ -125,11 +113,8 @@ struct utp{
 }
 */
 }
-
-impl Utp for utp{
-	fn new(port: u16, ip: String)->utp{
+   pub fn new(port: u16, ip: String)->utp{
 		utp{ port: port, ip: ip }		
 	}
-	fn drop(a: utp){}
-   }
+   pub fn drop(a: utp){}
 }
