@@ -20,7 +20,7 @@ enum er{
 	r,// result
 }
 
-trait new_connection{
+pub trait Utp{
 	fn new(port: u16, ip: String)->utp;
 	fn drop(a: utp);
 }
@@ -126,7 +126,7 @@ struct utp{
 */
 }
 
-impl new_connection for utp{
+impl Utp for utp{
 	fn new(port: u16, ip: String)->utp{
 		utp{ port: port, ip: ip }		
 	}
