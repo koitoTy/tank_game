@@ -1,4 +1,4 @@
-pub mod utp{
+mod utp{
 use std::io;
 use std::io::prelude::*;
 use std::net::SocketAddr;
