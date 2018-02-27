@@ -39,6 +39,11 @@ pub struct data{
 }
 
 impl utp{
+	
+	fn time(&mut self, t: u64){
+        	self.time = t;
+    	}
+	
 	fn recv(&self)->data{
 	
 	    let time = self.time;
