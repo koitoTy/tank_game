@@ -21,7 +21,7 @@ pub struct utp{
 pub struct data{
 	connect: bool,
 	data: [u8; 9],
-	err_code: u8, 
+	err_code: u16, 
 	err_text: String,
 /* 
 0 - non error	
@@ -34,7 +34,7 @@ pub struct data{
 
 
 impl data{
-	fn error(&self)->u8{
+	fn error(&self)->u16{
 		self.err_code
 	}
 	
@@ -53,9 +53,9 @@ impl utp{
 		let port: &str = &*self.port.to_string();
 				
 		
-		let data:[u8; 9] = [2,99,0,8,8,8,8,1,1010];
+		let data:[u8; 9] = [2,99,0,8,8,8,8,1,101];
 		
-		let mut buf: [u8; 9] = [0; 9];// mes_type, id_mes, id EvType x y z d , control byte (1010)
+		let mut buf: [u8; 9] = [0; 9];// mes_type, id_mes, id EvType x y z d , control byte (101)
 			
 
 		
@@ -74,7 +74,7 @@ impl utp{
 		
 		let ok_q = socket.recv(&mut buf).is_ok(); // чтобы паники небыло
         
-		if buf[8] == 1010 { return true;} else { return false; } 
+		if buf[8] == 101 { return true;} else { return false; } 
 		 true
 	}
 		
@@ -103,8 +103,8 @@ impl utp{
 		let ip: &str = &*self.ip;
 		let port: &str = &*self.port.to_string();
 
-		let mut buf: [u8; 9] = [0; 9];// mes_type, id_mes, id EvType x y z d , control byte (1010)
-		let mut b_q: [u8; 7] = [0; 7];
+		let mut buf: [u8; 9] = [0; 9];// mes_type, id_mes, id EvType x y z d , control byte (101)
+		let b_q: [u8; 7] = [0; 7];
 		
 		
 		
@@ -125,7 +125,7 @@ impl utp{
 
 	let ok_q = socket.recv(&mut buf).is_ok(); // чтобы паники небыло
 		
-	if buf[8] == 1010 { return data{connect: true, data: buf, err_code: 0, err_text: "all ok".to_string()}; }
+	if buf[8] == 101 { return data{connect: true, data: buf, err_code: 0, err_text: "all ok".to_string()}; }
 
 	data{connect: false, data: buf, err_code: 1, err_text: "bad message".to_string()}
     }
@@ -135,9 +135,9 @@ impl utp{
 		let ip: &str = &*self.ip;
 		let port: &str = &*self.port.to_string();
 		
-		let mut b_q: [u8; 7] = [0; 7];
+		let b_q: [u8; 7] = [0; 7];
         
-		let mut buf: [u8; 9] = [0; 9];// mes_type, id_mes, id EvType x y z d , control byte (1010)
+		let mut buf: [u8; 9] = [0; 9];// mes_type, id_mes, id EvType x y z d , control byte (101)
 			
 
 		let mut y = false;
@@ -157,7 +157,7 @@ impl utp{
 		thread::sleep(Duration::from_millis(1));
         
         let ok_q = socket.recv(&mut buf).is_ok(); // чтобы паники небыло
-        if buf[8] == 1010 { y = true;}
+        if buf[8] == 101 { y = true;}
         
         if y == false { return data{connect: false, data: [0; 9], err_code: 404, err_text: "bad connect!".to_string()}; }
 		 data{connect: true, data: buf, err_code: 0, err_text: "all ok".to_string()}		
