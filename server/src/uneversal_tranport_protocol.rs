@@ -90,8 +90,7 @@ impl utp{
 			Err(Er) => {return false;},	
 	    };		
 	
-	    let a = socket.connect(ip.to_string()+":"+port).is_ok();
-	    a
+	     socket.connect(ip.to_string()+":"+port).is_ok()	    
 	}
 
 	fn clone(&self)->utp{
