@@ -10,7 +10,7 @@ namespace UnTP_CSharp
         static void Main(string[] args)
         {
             utp t = new utp(8080, "127.0.0.1");
-            t.d();
+            t.send();
         }
     }
 
@@ -20,8 +20,11 @@ namespace UnTP_CSharp
         private data data { get; set; }
         public utp(int port_, string ip_) { port = port_; ip = ip_; data = new data(false, new int[9], 404, "bad connect!"); }       
 
-        internal void d()
-        {
+        internal void send(){
+            
+        }
+        
+        internal void recv(){
             
         }
     }
