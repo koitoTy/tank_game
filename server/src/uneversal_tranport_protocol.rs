@@ -14,7 +14,7 @@ use std::rc::Rc;
 pub struct utp{
 	port: u16,
 	ip: String,/*порт и ip конечного компа (клиента)*/	
-    data: data,
+        data: data,
 }
 
 
@@ -62,12 +62,12 @@ impl utp{
 		let socket = match UdpSocket::bind("127.0.0.1:8081"){		
 			Ok(A) => {A},
 			Err(Er) => {return false;},	
-	};		
+	        };		
 		let a = socket.connect(ip.to_string()+":"+port).is_ok();
 
 		if a == false {
 			return false;
-        }; 
+                }
 	
 		let a = socket.send(&data).is_ok();		
 		thread::sleep(Duration::from_millis(1));
@@ -75,7 +75,7 @@ impl utp{
 		let ok_q = socket.recv(&mut buf).is_ok(); // чтобы паники небыло
         
 		if buf[8] == 101 { return true;} else { return false; } 
-		 true
+		true
 	}
 		
 	
@@ -85,7 +85,7 @@ impl utp{
 	    let ip: &str = &*self.ip;
 	    let port: &str = &*self.port.to_string();
 	
-          let socket = match UdpSocket::bind("127.0.0.1:8080"){		
+            let socket = match UdpSocket::bind("127.0.0.1:8080"){		
 			Ok(A) => {A},
 			Err(Er) => {return false;},	
 	    };		
@@ -94,7 +94,7 @@ impl utp{
 	}
 
 	fn clone(&self)->utp{
-		utp{ port: self.port, ip: self.ip.to_string(), data: data{connect: false, data: [0; 9], err_code: 404, err_text: "bad connect!".to_string()} }
+		utp{ port: self.port, ip: self.ip.to_string(), data: data{connect: false, data: [0; 9], err_code: 0, err_text: "none connect!".to_string()} }
 	}
 
 	
@@ -105,30 +105,30 @@ impl utp{
 
 		let mut buf: [u8; 9] = [0; 9];// mes_type, id_mes, id EvType x y z d , control byte (101)
 		let b_q: [u8; 7] = [0; 7];
-		
-		
-		
-		
+
+
+
+
 		let socket = match UdpSocket::bind("127.0.0.1:8080"){		
 			Ok(A) => {A},
-			Err(Er) => {return data{connect: false, data: buf, err_code: 2, err_text: "bad server!".to_string()}; 
+			Err(Er) => {return data{connect: false, data: buf, err_code: 2, err_text: "bad server, none connect to client!".to_string()}; 
 						UdpSocket::bind("127.0.0.1:8080").unwrap()},	
-	};		
-	
+	        };		
+
 		let a = socket.connect(ip.to_string()+":"+port).is_ok();
 
 		if a == false {
 			return data{connect: false, data: buf, err_code: 404, err_text: "bad connect!".to_string()}; 
 		}
 
-	
 
-	let ok_q = socket.recv(&mut buf).is_ok(); // чтобы паники небыло
-		
-	if buf[8] == 101 { return data{connect: true, data: buf, err_code: 0, err_text: "all ok".to_string()}; }
 
-	data{connect: false, data: buf, err_code: 1, err_text: "bad message".to_string()}
-    }
+		let ok_q = socket.recv(&mut buf).is_ok(); // чтобы паники небыло
+
+		if buf[8] == 101 { return data{connect: true, data: buf, err_code: 0, err_text: "all ok".to_string()}; }
+
+		data{connect: false, data: buf, err_code: 1, err_text: "bad message".to_string()}
+    	}
 
 
 	fn send(&self, data: [u8; 9])->data{// данные, сколько ждём ответа, количество запросов
@@ -143,9 +143,9 @@ impl utp{
 		let mut y = false;
 		let socket = match UdpSocket::bind("127.0.0.1:8081"){		
 			Ok(A) => {A},
-			Err(Er) => {return data{connect: false, data: [0; 9], err_code: 2, err_text: "bad server!".to_string()}; 
+			Err(Er) => {return data{connect: false, data: buf, err_code: 2, err_text: "bad server, none connect to client!".to_string()}; 
 						UdpSocket::bind("127.0.0.1:1000").unwrap()},	
-	};		
+		};		
 		let a = socket.connect(ip.to_string()+":"+port).is_ok();
 
 		if a == false {
@@ -156,14 +156,14 @@ impl utp{
 		let a = socket.send(&data).is_ok();		
 		thread::sleep(Duration::from_millis(1));
         
-        let ok_q = socket.recv(&mut buf).is_ok(); // чтобы паники небыло
-        if buf[8] == 101 { y = true;}
-        
-        if y == false { return data{connect: false, data: [0; 9], err_code: 404, err_text: "bad connect!".to_string()}; }
-		 data{connect: true, data: buf, err_code: 0, err_text: "all ok".to_string()}		
-    }
+		let ok_q = socket.recv(&mut buf).is_ok(); // чтобы паники небыло
+		if buf[8] == 101 { y = true;}
+
+		if y == false { return data{connect: false, data: [0; 9], err_code: 404, err_text: "bad connect!".to_string()}; }
+			 data{connect: true, data: buf, err_code: 0, err_text: "all ok".to_string()}		
+	}
 	fn clear(&self)->utp{
-		utp{port: 0, ip: "".to_string(), data: data{connect: false, data: [0; 9], err_code: 404, err_text: "bad connect!".to_string()} }
+		utp{port: 0, ip: "".to_string(), data{connect: false, data: buf, err_code: 2, err_text: "bad server, none connect to client!".to_string()} }
 	}
 	
 }
