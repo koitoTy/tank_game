@@ -27,6 +27,8 @@ pub struct data{
 0 - non error	
 1 - bad message
 2 - bad server
+3 - error reading
+
 404 - bad connect
 405 - bad connect or bad message
 */	
@@ -124,6 +126,8 @@ impl utp{
 
 
 		let ok_q = socket.recv(&mut buf).is_ok(); // чтобы паники небыло
+		
+		if ok_q == false { return data{connect: false, data: buf, err_code: 3, err_text: "error reading".to_string()}; }
 
 		if buf[8] == 101 { return data{connect: true, data: buf, err_code: 0, err_text: "all ok".to_string()}; }
 
@@ -157,10 +161,11 @@ impl utp{
 		thread::sleep(Duration::from_millis(1));
         
 		let ok_q = socket.recv(&mut buf).is_ok(); // чтобы паники небыло
-		if buf[8] == 101 { y = true;}
-
-		if y == false { return data{connect: false, data: [0; 9], err_code: 404, err_text: "bad connect!".to_string()}; }
-			 data{connect: true, data: buf, err_code: 0, err_text: "all ok".to_string()}		
+		if ok_q == false { return data{connect: false, data: buf, err_code: 3, err_text: "error reading".to_string()}; }
+		
+		if buf[8] != 101 {return data{connect: false, data: [0; 9], err_code: 404, err_text: "bad connect!".to_string()};}
+		
+		data{connect: true, data: buf, err_code: 0, err_text: "all ok".to_string()};			 		
 	}
 	fn clear(&self)->utp{
 		utp{port: 0, ip: "".to_string(), data{connect: false, data: buf, err_code: 2, err_text: "bad server, none connect to client!".to_string()} }
