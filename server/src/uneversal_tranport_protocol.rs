@@ -165,11 +165,11 @@ impl utp{
 		
 		if buf[8] != 101 {return data{connect: false, data: [0; 9], err_code: 404, err_text: "bad connect!".to_string()};}
 		
-		data{connect: true, data: buf, err_code: 0, err_text: "all ok".to_string()};			 		
-	}
+		data{connect: true, data: buf, err_code: 0, err_text: "all ok".to_string()}			 		
+	}/*
 	fn clear(&self)->utp{
 		utp{port: 0, ip: "".to_string(), data{connect: false, data: buf, err_code: 2, err_text: "bad server, none connect to client!".to_string()} }
-	}
+	}*/
 	
 }
    pub fn new(port: u16, ip: String)->utp{
